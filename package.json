@@ -1,0 +1,7 @@
+{
+  "name": "aes",
+  "version": "1.0.0",
+  "description": "AES implementation in Node.js for educational purpose",
+  "main": "dist/index.js",
+  "license": "MIT"
+}
