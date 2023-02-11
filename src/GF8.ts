@@ -9,10 +9,10 @@ export class GF8{
 		return new GF8(this.val ^ to.val);
 	}
 
-	createTable(){
+	createTable(upTo: number){
 		const table: number[] = [];
 		table.push(this.val);
-		for(let i = 0; i < 7; i++) {
+		for(let i = 0; i < upTo; i++) {
 			if((table[i] & 0x80) === 0) table.push(table[i] << 1);
 			else {
 				const shifted = table[i] << 1;
@@ -23,32 +23,35 @@ export class GF8{
 	}
 
 	mul(by: GF8){
-		const table = this.createTable();
+		const highestBit = highestBitPos(by.val);
+		if(highestBit === -1) return new GF8(0);
+		const table = this.createTable(highestBit);
 		let val = 0;
-		for(let i = 0; i < 8; i++) {
-			console.log(('00000000' + val.toString(2)).slice(-8))
+		for(let i = 0; i <= highestBit; i++) {
 			if(by.val & (0x1 << i)) val ^= table[i];
 		}
 		return new GF8(val);
 	}
 
-	/**
-	 * Returns the position of the highest 1 bit
-	 * 00110011 -> 6
-	 * 00000010 -> 2
-	 * 00000000 -> 0
-	 * @returns The position of the highest 1 bit, 0 ~ 8 (0 is returned if there are no 1 bits)
-	 */
-	getHighestBitPos(){
-		for(let i = 0; i < 8; i++) {
-			if(this.val & (0x80 >> i)) return 8 - i;
-		}
-		return 0;
-	}
-
-	inverse(by: GF8){
+	inverse(){
 		const table = [
-			
+			[0b100011011, 0, 0],
+			[this.val, 0, 1]
 		]
+
+		const divideWithRemainder = (a: number, b: number) => {
+			while(a > b){
+
+			}
+		}
 	}
+}
+
+function highestBitPos(a: number){
+	let counter = 0;
+	while(a > 0){
+		counter++;
+		a = a >> 1;
+	}
+	return counter - 1;
 }
