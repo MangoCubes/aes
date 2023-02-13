@@ -1,14 +1,26 @@
 /**
- * Wrapper for hex numbers used in AES
+ * A class that wraps a number in 0x00 and 0xFF inclusive with functions to do operations over GF(2^8)
  */
 export class GF8{
 	constructor(public val: number){
 	}
 
+	/**
+	 * Add two numbers together in GF(2^8), and return a new instance
+	 * Note that in this field, addition is equivalent to XOR operation
+	 * @param to The number to add
+	 * @returns A new instance with a value of two GF8 instances added together
+	 */
 	add(to: GF8){
 		return new GF8(this.val ^ to.val);
 	}
 
+	/**
+	 * Multiply two numbers in GF(2^8), and return a new instance
+	 * Note that in this field, multiplication is defined as polynomial multiplication with modulo x^8 + x^4 + x^3 + x + 1
+	 * @param by The number to multiply
+	 * @returns  A new instance with a value of two GF8 instances multiplied together
+	 */
 	mul(by: GF8){
 		if(by.val === 0) return new GF8(0);
 		let temp = this.val;
@@ -21,6 +33,11 @@ export class GF8{
 		return new GF8(val);
 	}
 
+	/**
+	 * Calculates a multiplicative inverse of this instance and return a new instance with that value
+	 * This uses extended Euclid's algorithm to calculate the inverse
+	 * @returns A new instance that has the value of the current instance's multiplicative inverse
+	 */
 	inv(){
 		const table: {
 			r: number;
@@ -47,6 +64,12 @@ export class GF8{
 	}
 }
 
+/**
+ * Calculates the highest set bit position
+ * Returns 0 if the LSB is the only one set, and -1 if the input is 0
+ * @param a The input
+ * @returns The index of the highest set bit
+ */
 function highestBitPos(a: number){
 	let counter = 0;
 	while(a > 0){
@@ -56,6 +79,12 @@ function highestBitPos(a: number){
 	return counter - 1;
 }
 
+/**
+ * Divide a polynomial by another, and calculates the quotient and remainder
+ * @param a The dividend
+ * @param b The divisor
+ * @returns The quotient and remainder
+ */
 function divideWithRemainder(a: number, b: number) {
 	const quotientBits = [];
 	const bBit = highestBitPos(b);
