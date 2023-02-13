@@ -13,9 +13,9 @@ export class GF8{
 		const table: number[] = [];
 		table.push(this.val);
 		for(let i = 0; i < upTo; i++) {
-			if((table[i] & 0x80) === 0) table.push(table[i] << 1);
+			if((table[i] & 0x80) === 0) table.push((table[i] << 1) & 0xFF);
 			else {
-				const shifted = table[i] << 1;
+				const shifted = (table[i] << 1) & 0xFF;
 				table.push(shifted ^ 0x1B);
 			}
 		}
@@ -43,22 +43,6 @@ export class GF8{
 			{r: this.val, q: 0, y: 1}
 		];
 
-		const divideWithRemainder = (a: number, b: number) => {
-			const quotientBits = [];
-			const bBit = highestBitPos(b);
-			while(true){
-				const aBit = highestBitPos(a);
-				const q = aBit - bBit;
-				if(q < 0) break;
-				a = a ^ (b << q);
-				quotientBits.push(q);
-			}
-			return {
-				r: a,
-				q: quotientBits.reduce((prev, current) => prev += (1 << current), 0)
-			}
-		}
-
 		let current = 0;
 		while(table[table.length - 1].r !== 1){
 			const div = divideWithRemainder(table[current].r, table[current + 1].r);
@@ -82,4 +66,20 @@ function highestBitPos(a: number){
 		a = a >> 1;
 	}
 	return counter - 1;
+}
+
+function divideWithRemainder(a: number, b: number) {
+	const quotientBits = [];
+	const bBit = highestBitPos(b);
+	while(true){
+		const aBit = highestBitPos(a);
+		const q = aBit - bBit;
+		if(q < 0) break;
+		a = a ^ (b << q);
+		quotientBits.push(q);
+	}
+	return {
+		r: a,
+		q: quotientBits.reduce((prev, current) => prev += (1 << current), 0)
+	}
 }
