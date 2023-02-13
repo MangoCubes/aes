@@ -9,31 +9,19 @@ export class GF8{
 		return new GF8(this.val ^ to.val);
 	}
 
-	createTable(upTo: number){
-		const table: number[] = [];
-		table.push(this.val);
-		for(let i = 0; i < upTo; i++) {
-			if((table[i] & 0x80) === 0) table.push((table[i] << 1) & 0xFF);
-			else {
-				const shifted = (table[i] << 1) & 0xFF;
-				table.push(shifted ^ 0x1B);
-			}
-		}
-		return table;
-	}
-
 	mul(by: GF8){
-		const highestBit = highestBitPos(by.val);
-		if(highestBit === -1) return new GF8(0);
-		const table = this.createTable(highestBit);
+		if(by.val === 0) return new GF8(0);
+		let temp = this.val;
 		let val = 0;
-		for(let i = 0; i <= highestBit; i++) {
-			if(by.val & (0x1 << i)) val ^= table[i];
+		for(let i = 0; i < 8; i++){
+			if(by.val & (0x1 << i)) val ^= temp;
+			if((temp & 0x80) === 0) temp = (temp << 1) & 0xFF;
+			else temp = ((temp << 1) & 0xFF) ^ 0x1B;
 		}
 		return new GF8(val);
 	}
 
-	inverse(){
+	inv(){
 		const table: {
 			r: number;
 			q: number;
