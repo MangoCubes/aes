@@ -34,16 +34,44 @@ export class GF8{
 	}
 
 	inverse(){
-		const table = [
-			[0b100011011, 0, 0],
-			[this.val, 0, 1]
-		]
+		const table: {
+			r: number;
+			q: number;
+			y: number;
+		}[] = [
+			{r: 0b100011011, q: 0, y: 0},
+			{r: this.val, q: 0, y: 1}
+		];
 
 		const divideWithRemainder = (a: number, b: number) => {
-			while(a > b){
-
+			const quotientBits = [];
+			const bBit = highestBitPos(b);
+			while(true){
+				const aBit = highestBitPos(a);
+				const q = aBit - bBit;
+				if(q < 0) break;
+				a = a ^ (b << q);
+				quotientBits.push(q);
+			}
+			return {
+				r: a,
+				q: quotientBits.reduce((prev, current) => prev += (1 << current), 0)
 			}
 		}
+
+		let current = 0;
+		while(table[table.length - 1].r !== 1){
+			const div = divideWithRemainder(table[current].r, table[current + 1].r);
+			const prevY = new GF8(table[current].y);
+			const nextY = new GF8(table[current + 1].y);
+			const prod = new GF8(div.q).mul(nextY);
+			table.push({
+				...div,
+				y: prevY.add(prod).val
+			});
+			current++;
+		}
+		return new GF8(table[table.length - 1].y);
 	}
 }
 
