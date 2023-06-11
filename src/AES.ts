@@ -1,44 +1,36 @@
 import { GF8 } from "./GF8";
+import { sBox as genSBox } from "./sBox";
 
-const n63Reversed = [1, 1, 0, 0, 0, 1, 1, 0];
-const n5Reversed = [1, 0, 1, 0, 0, 0, 0, 0];
+export class AESKey {
+    /**
+     * Derives key from key material
+     * @param keyData Key material, each number represent a byte
+     */
+    constructor(keyData: number[]){
+        const sBox = genSBox();
+        const key: number[] = [...keyData];
+        let rcon = new GF8(1);
+        // 16 byte key data implies the use of AES-128
+        if(keyData.length === 16){
+            // This loop runs for every words
+            for(let i = 4; i < 44; i++) {
+                const temp = key.slice((i - 1) * 4, i * 4);
+                if (i % 4 === 0) {
+                    // Circular left shift
+                    const firstByte = temp.shift();
+                    temp.push(firstByte!);
 
-function sBoxBit(byte: number){
-	const bits = [...Array(8)].map((v, i) => (byte >> i) & 1);
-	const transformed = bits.map((v, i) => {
-		const toXOR: number[] = [v, bits[(i + 4) % 8], bits[(i + 5) % 8], bits[(i + 6) % 8], bits[(i + 7) % 8], n63Reversed[i]];
-		const setBits = toXOR.reduce((prev, v) => v + prev, 0);
-		return setBits % 2;
-	});
-	return transformed.reduce((prev, v, i) => v ? prev + 2 ** i : prev, 0);
-}
+                    // S-box substitution
+                    for(let k = 0; k < 4; k++) temp[k] = sBox[temp[k]];
 
-function invSBoxBit(byte: number){
-	const bits = [...Array(8)].map((v, i) => (byte >> i) & 1);
-	const transformed = bits.map((v, i) => {
-		const toXOR: number[] = [bits[(i + 2) % 8], bits[(i + 5) % 8], bits[(i + 7) % 8], n5Reversed[i]];
-		const setBits = toXOR.reduce((prev, v) => v + prev, 0);
-		return setBits % 2;
-	});
-	return transformed.reduce((prev, v, i) => v ? prev + 2 ** i : prev, 0);
-}
+                    // XOR with round constant
+                    temp[0] = temp[0] ^ rcon.val;
 
-export function sBox(){
-	const box = [];
-	box.push(sBoxBit(0));
-	for(let i = 1; i <= 0xFF; i++) {
-		const inv = new GF8(i).inv();
-		box.push(sBoxBit(inv.val));
-	}
-	return box;
-}
-
-export function invSBox(){
-	const box = [];
-	for(let i = 0; i <= 0xFF; i++) {
-		const transformed = new GF8(invSBoxBit(i));
-		if (transformed.val) box.push(transformed.inv().val);
-		else box.push(0);
-	}
-	return box;
+                    // Updating round constant
+                    rcon = rcon.mul(new GF8(2));
+                }
+                for(let j = 0; j < 4; j++) key.push(temp[j] ^ key[(i - 4) * 4 + j]);
+            } 
+        } else throw new Error("Not implemented");
+    }
 }
