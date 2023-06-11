@@ -20,12 +20,15 @@ export class AES {
     encrypt(){
         for(let i = 0; i < this.blocks.length; i++){
             this.blocks[i] = this.addRoundKey(this.blocks[i], 0);
-            for(let i = 1; i <= 10; i++) this.blocks[i] = this.applyRound(this.blocks[i], i);
+            for(let j = 1; j <= 10; j++) this.blocks[i] = this.applyRound(this.blocks[i], j);
         }
     }
 
     applyRound(block: number[], round: number): number[] {
-        return this.addRoundKey(this.mixColumns(this.shiftRows(this.subBytes(block))), round);
+        block = this.subBytes(block);
+        block = this.shiftRows(block);
+        block = this.mixColumns(block)
+        return this.addRoundKey(block, round);
     }
 
     addRoundKey(block: number[], round: number): number[] {
@@ -35,16 +38,17 @@ export class AES {
     }
 
     subBytes(block: number[]){
-        for(let i = 0; i < 16; i++) block[i] = this.sBox[block[i]];
+        for(let i = 0; i < 16; i++)
+            block[i] = this.sBox[block[i]];
         return block;
     }
 
     shiftRows(block: number[]) {
         return [
-            block[0], block[1], block[2], block[3],
-            block[5], block[6], block[7], block[4],
-            block[10], block[11], block[8], block[9],
-            block[15], block[12], block[13], block[14]
+            block[0], block[5], block[10], block[15],
+            block[4], block[9], block[14], block[3],
+            block[8], block[13], block[2], block[7],
+            block[12], block[1], block[6], block[11]
         ];
     }
 
@@ -83,7 +87,12 @@ export class AES {
                 ].reduce((p, c) => p.add(c)).val;
             }
         ];
-        block.forEach((v, i) => funcs[i % 4](block[i], block[i + 4], block[i + 8], block[i + 12]));
-        return block;
+        const newBlock = [];
+        for(let i = 0; i < 4; i++){
+            for(let j = 0; j < 4; j++){
+                newBlock.push(funcs[i](block[j], block[j + 4], block[j + 8], block[j + 12]));
+            }
+        }
+        return newBlock;
     }
 }
