@@ -2,12 +2,12 @@ import { AESKey } from "./AESKey";
 import { GF8 } from "./GF8";
 import { invSBox, sBox } from "./sBox";
 
-class AES {
+export class AES {
     key: AESKey;
     blocks: number[][];
     sBox: number[];
     invSBox: number[];
-    constructor(data: number[], key: []){
+    constructor(data: number[], key: number[]){
         this.key = new AESKey(key);
         this.sBox = sBox();
         this.invSBox = invSBox();
