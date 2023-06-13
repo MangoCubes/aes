@@ -7,7 +7,18 @@ export class AES {
     blocks: number[][];
     sBox: number[];
     invSBox: number[];
-    constructor(data: number[], key: number[]){
+    constructor(data: number[] | string, key: number[] | string){
+
+        const convert = (s: string) => {
+            const ret = [];
+            for(let i = 0; i < s.length; i += 2){
+                ret.push(parseInt(s.slice(i, i + 2), 16))
+            }
+            return ret;
+        }
+
+        if (typeof(data) === "string") data = convert(data);
+        if (typeof(key) === "string") key = convert(key);
         this.key = new AESKey(key);
         this.sBox = sBox();
         this.invSBox = invSBox();
