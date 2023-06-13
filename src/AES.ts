@@ -28,6 +28,9 @@ export class AES {
         }
     }
 
+    /**
+     * Encrypts each block of data using ECB.
+     */
     encrypt(){
         for(let i = 0; i < this.blocks.length; i++){
             this.blocks[i] = this.addRoundKey(this.blocks[i], 0);
@@ -36,6 +39,13 @@ export class AES {
         }
     }
 
+    /**
+     * Applies a round to a given block.
+     * @param block The block to apply a round
+     * @param round Round number, necessary for adding round key
+     * @param isLast Boolean that gets set to true if this is the last round, where mixColumns does not happen
+     * @returns A fully encrypted block
+     */
     applyRound(block: number[], round: number, isLast: boolean): number[] {
         block = this.subBytes(block);
         block = this.shiftRows(block);
@@ -43,18 +53,34 @@ export class AES {
         return this.addRoundKey(block, round);
     }
 
+    /**
+     * Adds a round key to a block
+     * @param block Block to apply a round key
+     * @param round Round number, necessary for getting the part of the expanded key
+     * @returns Block XORed with the part of expanded key
+     */
     addRoundKey(block: number[], round: number): number[] {
         const key = this.key.getRoundKey(round);
         for(let i = 0; i < 16; i++) block[i] ^= key[i];
         return block;
     }
 
+    /**
+     * Substitutes each byte using the S-box
+     * @param block Block to substitute
+     * @returns Whole block substituted using S-box
+     */
     subBytes(block: number[]){
         for(let i = 0; i < 16; i++)
             block[i] = this.sBox[block[i]];
         return block;
     }
 
+    /**
+     * Shift each rows
+     * @param block A block to apply shiftRow operation
+     * @returns Block with row shifting applies
+     */
     shiftRows(block: number[]) {
         return [
             block[0], block[5], block[10], block[15],
@@ -64,6 +90,11 @@ export class AES {
         ];
     }
 
+    /**
+     * Applies mixColumns operation on a given block
+     * @param block Block to apply mixColumns
+     * @returns A block with mixColumns applied
+     */
     mixColumns(block: number[]){
         const funcs = [
             (a: number, b: number, c: number, d: number) => {
