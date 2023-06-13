@@ -20,14 +20,15 @@ export class AES {
     encrypt(){
         for(let i = 0; i < this.blocks.length; i++){
             this.blocks[i] = this.addRoundKey(this.blocks[i], 0);
-            for(let j = 1; j <= 10; j++) this.blocks[i] = this.applyRound(this.blocks[i], j);
+            for(let j = 1; j <= 10; j++) 
+                this.blocks[i] = this.applyRound(this.blocks[i], j, j === 10);
         }
     }
 
-    applyRound(block: number[], round: number): number[] {
+    applyRound(block: number[], round: number, isLast: boolean): number[] {
         block = this.subBytes(block);
         block = this.shiftRows(block);
-        block = this.mixColumns(block)
+        if (!isLast) block = this.mixColumns(block);
         return this.addRoundKey(block, round);
     }
 
@@ -90,7 +91,7 @@ export class AES {
         const newBlock = [];
         for(let i = 0; i < 4; i++){
             for(let j = 0; j < 4; j++){
-                newBlock.push(funcs[i](block[j], block[j + 4], block[j + 8], block[j + 12]));
+                newBlock.push(funcs[j % 4](block[(i * 4)], block[(i * 4) + 1], block[(i * 4) + 2], block[(i * 4) + 3]));
             }
         }
         return newBlock;
